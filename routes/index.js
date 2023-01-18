@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 
-const value = ""+Math.random();
+const value = "" + Math.ceil(Math.random()*1000);
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -9,7 +9,14 @@ router.get('/', function(req, res, next) {
   res.cookie("strictCookie", value, { sameSite: "strict" })
   res.cookie("noneCookie", value, { sameSite: "none" })//none requires ssl for chrome...
   res.cookie("defaultCookie", value, { })
-  res.send('<!DOCTYPE html><html lang=\'de\'><body><iframe srcdoc="<!DOCTYPE html><html><script>fetch(\'/check_cookie\').then(res => res.text()).then(res => document.body.innerHTML =res);</script></html>" title=""></iframe></body></html>')
+  var iframeCode = "<!DOCTYPE html><html>"
+                   + "<body><div id='cookie'>Cookies</div><div id='result'>Result</div></body>"
+                   + "<script>"
+                   + "fetch('/check_cookie').then(res => res.text()).then(res => document.getElementById('result').innerHTML = res);"
+                   + "document.getElementById('cookie').innerHTML = 'Cookies INSIDE: ' + document.cookie;"
+                   + "</script>"
+                   + "</html>";
+  res.send(`<!DOCTYPE html><html lang='de'><body><div id="cookie">Cookies</div><iframe srcdoc="${iframeCode}" title="" width="100%"></iframe></body><script>document.getElementById('cookie').innerHTML = navigator.userAgent + '<br/>Cookies OUTSIDE: ' + document.cookie;</script></html>`)
 });
 
 router.get('/check_cookie', function(req, res, next) {
